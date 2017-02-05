@@ -9,6 +9,8 @@
 
 typedef ulong Align;
 
+#define mem_header_union another_name
+
 /*
     some comment
 */
