@@ -9,6 +9,9 @@
 
 typedef ulong Align;
 
+/*
+    some comment
+*/
 union mem_header_union
 {
     struct
