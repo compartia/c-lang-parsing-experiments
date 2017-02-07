@@ -1,0 +1,48 @@
+7	66	"----------------------------------------------------------------
+Statically-allocated memory manager
+by Eli Bendersky (eliben@gmail.com)
+This code is in the public domain.
+----------------------------------------------------------------"
+16	360	some comment
+22	456	Pointer to the next block in the free list
+26	572	Size of the block (in quantas of sizeof(mem_header_t))
+31	666	Used to align headers in memory to a boundary
+38	768	Initial empty list
+42	820	Start of free list
+46	891	Static pool for new allocations
+94	1657	"Allocations are done in 'quantas' of header size.
+The search for a free block of adequate size begins at the point 'freep'
+where the last block was found.
+If a too-big block is found, it is split and the tail is returned (this
+way the header of the original needs only to have its size adjusted).
+The pointer returned to the user points to the free space within the block,
+which begins one quanta after the header."
+103	2201	"Calculate how many quantas are required: we need enough to house all
+the requested bytes, plus the header. The -1 and +1 are there to make sure
+that if nbytes is a multiple of nquantas, we don't allocate too much"
+108	2526	"First alloc call, and no free list yet ? Use 'base' for an initial
+denegerate block of size 0, which points to itself"
+117	2790	big enough ?
+120	2860	exactly ?
+125	2989	"just eliminate this block from the free list by pointing
+its prev's next to its next"
+128	3140	too big
+144	3389	"Reached end of free list ?
+Try to allocate the block from the pool. If that succeeds,
+get_mem_from_pool adds the new block to the free list and
+it will be found in the following iterations. If the call
+to get_mem_from_pool doesn't succeed, we've run out of
+memory"
+163	4065	"Scans the free list, starting at freep, looking the the place to insert the
+free block. This is either between two existing blocks or at the end of the
+list. In any case, if the block being freed is adjacent to either neighbor,
+the adjacent blocks are combined."
+169	4378	acquire pointer to block header
+174	4497	"Find the correct place to place the block in (the free list is sorted by
+address, increasing order)"
+181	4684	"Since the free list is circular, there is one link where a
+higher-addressed block points to a lower-addressed block.
+This condition checks if the block should be actually
+inserted between them"
+187	4999	Try to combine with the higher neighbor
+200	5263	Try to combine with the lower neighbor

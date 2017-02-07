@@ -1,0 +1,9 @@
+
+.ipynb_checkpoints/**
+
+c-files/*.meta
+c-files/*.index
+
+c-files/model.ckpt*
+pycparser-release_v2.17/**
+*.pkl
