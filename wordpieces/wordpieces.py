@@ -1,4 +1,5 @@
 import operator
+import csv
 
 class WPDictBuilder(object):
     def __init__(self, max_chunk_len=4):
@@ -23,21 +24,46 @@ class WPDictBuilder(object):
         wp_dict = WPDict(dict(sortedWordpieces), self.max_chunk_len)
         return wp_dict
 
+    def build_from_tsv(self, input_file):
+        sum = 0
+        with open(input_file, 'r', encoding='utf-8') as tsvfile:
+            self.stats={}
+            tsvreader = csv.reader(tsvfile, delimiter='\t')
+            for row in tsvreader:
+                self.stats[row[0]]=int(row[1])
+                sum+=self.stats[row[0]]
+
+            print ('total sum is %d'%sum)
+            return self.build(len(self.stats))
+
+
+
+
+
 class WPDict(object):
     def __init__(self, _stats, max_chunk_len=4):
         self.max_chunk_len = max_chunk_len
         self.stats=_stats
 
     def find_longest_chunk(self, word):
-        for i in range(self.max_chunk_len, 1, -1):
+        for i in range(self.max_chunk_len, 0, -1):
             chunk=word[0:i]
             if(chunk in self.stats):
                 return chunk,i
         return "<UNK>",1
 
 
+    def as_list(self):
+        ret=[]
+        ret.append("<UNK>")
+        # ret.append(" ")
+        # ret.append("\n")
+        for w in sortWordpieces(self.stats):
+            ret.append(w[0])
+        return ret
+
     def break_sentence(self, sentence):
-        words=sentence.split()
+        words = sentence.split(' ')
         for word in words:
             for chunk in self.break_word(word):
                 yield chunk
@@ -51,11 +77,11 @@ class WPDict(object):
 
     def joinSentence(self, chunks):
         replacements=[]
-        if(chunks[0][1:].startswith("_")):
+        if(chunks[0].startswith("_")):
             replacements.append(chunks[0][1:])
         else:
             replacements.append(chunks[0])
-            
+
         for chunk in chunks[1:]:
             if '_'==chunk[0:1]:
                 replacements.append(' ')
@@ -65,16 +91,31 @@ class WPDict(object):
 
         return "".join(replacements)
 
+    def save_tsv(self, output_file):
+        with open(output_file, 'w', encoding='utf-8') as tsvfile:
+            sum=0
+            writer = csv.writer(tsvfile, delimiter='\t')
+            for w in sortWordpieces(self.stats):
+                sum+=w[1]
+                writer.writerow([w[0], w[1]])
+            print ('total sum is %d'%sum)
+
+
+
+
+
 
 def splitIntoWordpieces(chunk_len, sentence):
-    words=sentence.split()
+    words = sentence.split(' ')
+    yield '\n'
     for word in words:
-        if(chunk_len>1):
-            _word='_' + word
-        else:
-            _word=word
-        for i in range(0, len(_word), chunk_len):
+        if(chunk_len>1): _word='_' + word
+        else: _word=word
+
+        for i in range(0, len(_word), 1):
             yield _word[i:i + chunk_len]
+
+        yield ' '
 
 def sortWordpieces(wordcount):
     return sorted(wordcount.items(), key=operator.itemgetter(1), reverse=True)
