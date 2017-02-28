@@ -26,3 +26,6 @@ __pycache__/**
 
 c-files/redis/**
 rnn_c_model/__pycache__/**
+word2vec/GoogleNews-vectors-negative300.bin
+
+word2vec/.ipynb_checkpoints/**
